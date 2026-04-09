@@ -1,4 +1,6 @@
 import streamlit as st
+from langgraph_backend import chatbot
+from langchain_core.messages import HumanMessage
 
 st.title("Simple Chat Interface")
 
@@ -17,6 +19,7 @@ if st.session_state['memory_history']:
 # show input text box at the bottom of the page
 user_input = st.chat_input("Enter your message:")
 
+CONFIG =  {'configurable': {'thread_id': 'thread_1'}} 
 if user_input:
     
     # Append user message to memory history
@@ -24,9 +27,12 @@ if user_input:
     # Display user message
     with st.chat_message("user"):
         st.text(user_input)
-        
+    
+    # Get assistant response from chatbot
+    response = chatbot.invoke({"message": [HumanMessage(content=user_input)]}, config = CONFIG )   
+    ai_message = response["message"][-1].content
     #append assistant message to memory history
-    st.session_state['memory_history'].append({"role": "assistant", "content": user_input})
+    st.session_state['memory_history'].append({"role": "assistant", "content": ai_message})
      # Display assistant message
     with st.chat_message("assistant"):
-        st.text(user_input)
+        st.text(ai_message)
