@@ -19,6 +19,10 @@ def add_thread_to_history(thread_id):
     if thread_id not in st.session_state['chat_threads']:
         st.session_state['chat_threads'].append(thread_id)
 
+def load_conversation(thread_id):
+    state = chatbot.get_state(config={'configurable': {'thread_id': thread_id}})
+    # Check if messages key exists in state values, return empty list if not
+    return state.values.get('messages', [])
 
 st.title("Simple Chat Interface")
 
@@ -44,7 +48,19 @@ if st.sidebar.button("New Chat"):
 st.sidebar.caption("Keep it simple. Start a fresh thread anytime.")
 st.sidebar.markdown("### My Conversations")
 for thread_id in st.session_state['chat_threads']:
-    st.sidebar.button(str(thread_id))
+    if st.sidebar.button(str(thread_id)):
+        st.session_state['thread_id'] = thread_id
+        messages = load_conversation(thread_id)
+        temp_messages = []
+
+        for msg in messages:
+            if isinstance(msg, HumanMessage):
+                role='user'
+            else:
+                role='assistant'
+            temp_messages.append({'role': role, 'content': msg.content})
+
+        st.session_state['message_history'] = temp_messages
 # =============
 
 # loading the conversation history
